@@ -1,4 +1,4 @@
-FROM fnndsc/ubuntu-python3:latest
+FROM python:3.6.5-jessie
 
 COPY ./ /srv/app
 WORKDIR /srv/app
@@ -11,6 +11,7 @@ RUN curl -OL https://github.com/google/protobuf/releases/download/v3.3.0/protoc-
     mv protoc3/include/* /usr/local/include/
 
 RUN protoc --python_out=. protocol/*.proto
-RUN pip3 install -r requirements.txt
+RUN python --version
+RUN pip --no-cache-dir  install -r requirements.txt
 
-ENTRYPOINT [ "python3", "main.py" ]
+CMD [ "python", "./main.py" ]
