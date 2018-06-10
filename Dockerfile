@@ -10,7 +10,7 @@ RUN curl -OL https://github.com/google/protobuf/releases/download/v3.3.0/protoc-
     mv protoc3/bin/* /usr/local/bin/ && \
     mv protoc3/include/* /usr/local/include/
 
-RUN protoc --python_out=src protocol/*.proto
+RUN protoc --python_out=. protocol/*.proto
 RUN pip3 install -r requirements.txt
 
 ENTRYPOINT [ "python3", "main.py" ]
