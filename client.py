@@ -1,6 +1,7 @@
 import os
 import sys
 import socket
+import ssl
 from src.util import import_procotol_class
 
 from google.protobuf.any_pb2 import Any
@@ -76,9 +77,14 @@ def send_packet(args):
 def connect(args):
     if 'connected' in container and container['connected'] is True:
         return 'Already connected'
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('0.0.0.0', 9999))
-    container['socket'] = s
+    host = '0.0.0.0'
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    certfile = os.getcwd() + '/cert/cert.pem'
+    context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=certfile)
+    context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
+    conn = context.wrap_socket(sock, server_hostname=host)
+    conn.connect((host, 9999))
+    container['socket'] = conn
     container['connected'] = True
     return 'Connected'
 

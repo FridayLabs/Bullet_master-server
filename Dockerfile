@@ -10,8 +10,8 @@ RUN curl -OL https://github.com/google/protobuf/releases/download/v3.3.0/protoc-
     mv protoc3/bin/* /usr/local/bin/ && \
     mv protoc3/include/* /usr/local/include/
 
-RUN protoc --python_out=. protocol/*.proto
-RUN python --version
+RUN make proto
+RUN make certificate
 RUN pip --no-cache-dir  install -r requirements.txt
 
 CMD [ "python", "./main.py" ]

@@ -1,4 +1,5 @@
 import os
+import ssl
 import time
 import socket
 import logging
@@ -18,14 +19,15 @@ class Server:
         self.__configure_threads()
 
     def start(self, host, port):
-        soc = self.__build_socket(host, port)
+        context = self.__build_socket_context()
+        soc = self.__build_socket(host, port, context)
         logging.info("Started server on " + host + ":" + str(port))
         self.alive = True
         events.on_server_start()
         while self.alive:
             conn, addr = soc.accept()
             try:
-                handler = self.__build_handler_thread(conn, addr)
+                handler = self.__build_handler_thread(context, conn, addr)
                 self.handlers.append(handler)
                 handler.start()
             except:
@@ -65,14 +67,23 @@ class Server:
     def __is_production_env(self):
         return os.getenv("ENVIRONMENT") == "production"
 
-    def __build_socket(self, host, port):
+    def __build_socket_context(self):
+        context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        context.load_cert_chain(os.getcwd() + '/' + str(os.getenv('CERT_FILE') or 'cert/cert.pem'),
+                                os.getcwd() + '/' + str(os.getenv('KEY_FILE') or 'cert/key.pem'))
+        context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
+        context.set_ciphers('EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH')
+        return context
+
+    def __build_socket(self, host, port, context):
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         soc.bind((host, port))
         soc.listen(int(os.getenv("MAX_CLIENTS") or 1000))
         return soc
 
-    def __build_handler_thread(self, conn, addr):
+    def __build_handler_thread(self, context, conn, addr):
+        conn = context.wrap_socket(conn, server_side=True)
         handler = Handler(conn)
         handler.setName("Client<" + str(addr[0]) + ":" + str(addr[1]) + ">")
         return handler
