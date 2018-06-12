@@ -4,5 +4,6 @@ jobs:
    machine: true
    steps:
      - checkout
-     - run: docker build -t neronmoon/bullet-master-server::$CIRCLE_BRANCH .
-     - run: docker push neronmoon/bullet-master-server::$CIRCLE_BRANCH
+     - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+     - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_BRANCH .
+     - run: docker push neronmoon/bullet-master-server:$CIRCLE_BRANCH
