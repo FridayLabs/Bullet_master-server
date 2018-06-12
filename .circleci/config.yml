@@ -11,9 +11,6 @@ jobs:
       - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_SHA1 .
       - run: docker push neronmoon/bullet-master-server:$CIRCLE_SHA1
 
-  deployment:
-    release:
-      branch: master
-      commands:
-        - go get github.com/tcnksm/ghr
-        - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` cert/
+      # deploy certs
+      - run: go get github.com/tcnksm/ghr
+      - run: ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $CIRCLE_SHA1 cert/
