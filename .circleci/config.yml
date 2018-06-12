@@ -1,0 +1,8 @@
+version: 2
+jobs:
+ build:
+   machine: true
+   steps:
+     - checkout
+     - run: docker build -t neronmoon/bullet-master-server::$CIRCLE_BRANCH .
+     - run: docker push neronmoon/bullet-master-server::$CIRCLE_BRANCH
