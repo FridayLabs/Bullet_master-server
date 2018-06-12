@@ -77,7 +77,7 @@ def send_packet(args):
 def connect(args):
     if 'connected' in container and container['connected'] is True:
         return 'Already connected'
-    host = '0.0.0.0'
+    host = 'ip.krasnoperov.tk'
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     certfile = os.getcwd() + '/cert/cert.pem'
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=certfile)
