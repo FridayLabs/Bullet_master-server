@@ -8,12 +8,12 @@ jobs:
       - run: git submodule update --init
       - run: make certificate
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_BRANCH .
-      - run: docker push neronmoon/bullet-master-server:$CIRCLE_BRANCH
+      - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_SHA1 .
+      - run: docker push neronmoon/bullet-master-server:$CIRCLE_SHA1
 
-  # deployment:
-  #   release:
-  #     branch: master
-  #     commands:
-  #     — go get github.com/tcnksm/ghr
-  #     — ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` cert/
+  deployment:
+    release:
+      branch: master
+      commands:
+        - go get github.com/tcnksm/ghr
+        - ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace `git describe --tags` cert/
