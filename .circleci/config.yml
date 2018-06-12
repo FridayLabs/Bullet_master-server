@@ -8,8 +8,8 @@ jobs:
       - run: git submodule update --init
       - run: make certificate
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
-      - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_SHA1 .
-      - run: docker push neronmoon/bullet-master-server:$CIRCLE_SHA1
+      - run: docker build -t neronmoon/bullet-master-server:$CIRCLE_BUILD_NUM .
+      - run: docker push neronmoon/bullet-master-server:$CIRCLE_BUILD_NUM
 
       # deploy certs
       - run: go get github.com/tcnksm/ghr
