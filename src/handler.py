@@ -56,7 +56,7 @@ class Handler(Thread):
             ping.ServerVersion = "0"
             ping.ServerTime = int(time.time())
             self.__send_packet(ping)
-        util.periodically(lambda: ping(self), lambda: self.alive, int(os.getenv("CLIENT_CHECK_TIMEOUT") or 5))
+        util.periodically(lambda: ping(self), lambda: self.alive, int(os.getenv("CLIENT_CHECK_TIMEOUT", 5)))
 
     def __send_packet(self, packet):
         any = Any()

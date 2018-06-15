@@ -52,7 +52,7 @@ class Server:
     def __configure_logging(self):
         logger = logging.getLogger()
         handler = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s [%(threadName)s] %(levelname)s: %(message)s')
+        formatter = logging.Formatter("%(asctime)s [%(threadName)s] %(levelname)s: %(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
         logger.setLevel(logging.INFO if self.__is_production_env() else logging.DEBUG)
@@ -69,17 +69,17 @@ class Server:
 
     def __build_socket_context(self):
         context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        context.load_cert_chain(os.getcwd() + '/' + str(os.getenv('CERT_FILE') or 'cert/cert.pem'),
-                                os.getcwd() + '/' + str(os.getenv('KEY_FILE') or 'cert/key.pem'))
+        context.load_cert_chain(os.getcwd() + "/" + str(os.getenv("CERT_FILE", "cert/cert.pem")),
+                                os.getcwd() + "/" + str(os.getenv("KEY_FILE", "cert/key.pem")))
         context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
-        context.set_ciphers('EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH')
+        context.set_ciphers("EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH")
         return context
 
     def __build_socket(self, host, port, context):
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         soc.bind((host, port))
-        soc.listen(int(os.getenv("MAX_CLIENTS") or 1000))
+        soc.listen(int(os.getenv("MAX_CLIENTS", 1000)))
         return soc
 
     def __build_handler_thread(self, context, conn, addr):

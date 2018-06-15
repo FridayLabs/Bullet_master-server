@@ -7,10 +7,10 @@ openssl req -nodes -x509 -newkey rsa:4096 -keyout cert/key.pem -out cert/cert.pe
 1. Create .env file like .env.example
 1. Run container
 ```
-docker run neronmoon/bullet-master-server:latest \
---name bullet-master-server \
--v ./cert:/srv/app/cert \
---restart always \
---env-file .env \
---network="host"
+docker run -d -it --name bullet-master-server --mount type=bind,source="$(pwd)"/cert,target=/srv/app/cert --env-file .env -p 9999:9999 neronmoon/bullet-master-server:latest
+```
+
+## Kill:
+```
+docker kill bullet-master-server && docker rm bullet-master-server
 ```

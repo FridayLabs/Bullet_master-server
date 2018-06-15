@@ -14,9 +14,6 @@ def exit():
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, lambda x, y: exit())
     try:
-        server.start(
-            os.getenv("LISTEN") or "0.0.0.0",
-            int(os.getenv("PORT") or 9999)
-        )
+        server.start(os.getenv("LISTEN", "0.0.0.0"), int(os.getenv("PORT", 9999)))
     except KeyboardInterrupt:
         exit()
