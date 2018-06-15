@@ -1,6 +1,5 @@
 import time
 import importlib
-from protocol.Exceptions.Unauthenticated_pb2
 
 
 def periodically(fn, alive, timeout, step=0.5):
