@@ -1,7 +1,7 @@
-from src.server import Server
 import os
-import signal
 import sys
+import signal
+from src.Server import Server
 
 server = Server()
 

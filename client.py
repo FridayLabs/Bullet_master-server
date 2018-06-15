@@ -2,10 +2,10 @@ import os
 import sys
 import socket
 import ssl
-from src.util import import_procotol_class
-
+import traceback
+from src.Util import import_procotol_class
+from protocol.Authenticate_pb2 import Authenticate
 from google.protobuf.any_pb2 import Any
-from protocol.hello_pb2 import Hello
 
 container = {
     'buffer': b''
@@ -14,13 +14,15 @@ container = {
 
 def main():
     while True:
-        # try:
-        cmd = input('>')
-        result = handle_command(cmd.split(" "))
-        if result:
-            print(result)
-        # except Exception as e:
-        # print(e)
+        try:
+            cmd = input('>')
+            result = handle_command(cmd.split(" "))
+            if result:
+                print(result)
+        except Exception as e:
+            print(e)
+            for l in traceback.format_tb(e.__traceback__):
+                print(l)
 
 
 def handle_command(args):
@@ -34,8 +36,8 @@ def handle_command(args):
         return receive(args)
     elif cmd == 'send' or cmd == 's':
         return send(args)
-    elif cmd == 'send-packet' or cmd == 'sp':
-        return send_packet(args)
+    elif cmd == 'auth' or cmd == 'a':
+        return authenticate(args)
 
 
 def receive(args):
@@ -63,13 +65,24 @@ def send(args):
         container['socket'].sendall(args[1] + b'\0')
 
 
-def send_packet(args):
-    hello = Hello()
-    hello.Version = '123'
-    hello.UserID = '123'
-    hello.UserPass = '123'
+def authenticate(args):
+    auth = Authenticate()
+    if len(args) == 0:
+        auth.UserID = 'admin'
+        auth.UserPassword = 'admin'
+    else:
+        auth.UserID = args[0]
+        auth.UserPassword = args[1]
+    auth.ClientVersion = 'v0.0.1-alpha'
     any = Any()
-    Any.Pack(any, hello)
+    Any.Pack(any, auth)
+    packet = any.SerializeToString()
+    return send([1, packet])
+
+
+def __send_packet(packet):
+    any = Any()
+    Any.Pack(any, packet)
     packet = any.SerializeToString()
     return send([1, packet])
 
@@ -86,7 +99,7 @@ def connect(args):
     certfile = os.getcwd() + '/cert/cert.pem'
     context = ssl.create_default_context(ssl.Purpose.SERVER_AUTH, cafile=certfile)
     context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
-    conn = context.wrap_socket(sock, server_hostname=host)
+    conn = context.wrap_socket(sock, server_hostname='ip.krasnoperov.tk')
     conn.connect((host, 9999))
     container['socket'] = conn
     container['connected'] = True

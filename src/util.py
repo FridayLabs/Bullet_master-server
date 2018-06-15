@@ -1,5 +1,6 @@
 import time
 import importlib
+from protocol.Exceptions.Unauthenticated_pb2
 
 
 def periodically(fn, alive, timeout, step=0.5):
@@ -13,6 +14,6 @@ def periodically(fn, alive, timeout, step=0.5):
 
 
 def import_procotol_class(name):
-    components = name.split('.')
-    module = importlib.import_module("protocol." + components[1].lower() + "_pb2")
-    return getattr(module, components[1])
+    components = name.split('.')[1:]
+    module = importlib.import_module("protocol." + ".".join(components) + "_pb2")
+    return getattr(module, components[-1])
