@@ -1,5 +1,5 @@
 import inject
-from protocol.Exceptions.Unauthnticated_pb2 import Unauthenticated
+from protocol.Exceptions.Unauthenticated_pb2 import Unauthenticated
 
 
 class Client:
