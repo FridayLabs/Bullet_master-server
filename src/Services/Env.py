@@ -11,11 +11,19 @@ from subprocess import Popen, PIPE, STDOUT
 
 class Env:
     __posix_variable = re.compile('\$\{[^\}]*\}')
+    __escape_decoder = codecs.getdecoder('unicode_escape')
 
-    def __init__(self, dotenv_path, verbose=False):
+    def __init__(self, dotenv_path):
         self.dotenv_path = dotenv_path
         self.__dict = None
-        self.verbose = verbose
+
+    def dict(self):
+        if self.__dict:
+            return self.__dict
+
+        values = OrderedDict(self.__parse())
+        self.__dict = self.__resolve_nested_variables(values)
+        return self.__dict
 
     def __get_stream(self):
         self._is_file = False
@@ -26,24 +34,13 @@ class Env:
             self._is_file = True
             return io.open(self.dotenv_path)
 
-        if self.verbose:
-            warnings.warn("File doesn't exist {}".format(self.dotenv_path))
-
         return io.StringIO('')
 
-    def dict(self):
-        if self.__dict:
-            return self.__dict
-
-        values = OrderedDict(self.parse())
-        self.__dict = self.resolve_nested_variables(values)
-        return self.__dict
-
-    def parse(self):
+    def __parse(self):
         f = self.__get_stream()
 
         for line in f:
-            key, value = self.parse_line(line)
+            key, value = self.__parse_line(line)
             if not key:
                 continue
 
@@ -57,10 +54,9 @@ class Env:
             if k not in os.environ:
                 os.environ[k] = v
 
-    def parse_line(self, line):
+    def __parse_line(self, line):
         line = line.strip()
 
-        # Ignore lines with `#` or which doesn't have `=` in it.
         if not line or line.startswith('#') or '=' not in line:
             return None, None
 
@@ -69,18 +65,20 @@ class Env:
         if k.startswith('export '):
             k = k.lstrip('export ')
 
-        # Remove any leading and trailing spaces in key, value
         k, v = k.strip(), v.strip()
 
         if v:
             v = v.encode('unicode-escape').decode('ascii')
             quoted = v[0] == v[-1] in ['"', "'"]
             if quoted:
-                v = decode_escaped(v[1:-1])
+                v = self.__decode_escaped(v[1:-1])
 
         return k, v
 
-    def resolve_nested_variables(self, values):
+    def __decode_escaped(self, escaped):
+        return self.__escape_decoder(escaped)[0]
+
+    def __resolve_nested_variables(self, values):
         def __replacement(name):
             ret = os.getenv(name, values.get(name, ""))
             return ret
