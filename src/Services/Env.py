@@ -12,10 +12,11 @@ from subprocess import Popen, PIPE, STDOUT
 class Env:
     __posix_variable = re.compile('\$\{[^\}]*\}')
     __escape_decoder = codecs.getdecoder('unicode_escape')
+    __is_file = False
+    __dict = None
 
     def __init__(self, dotenv_path):
         self.dotenv_path = dotenv_path
-        self.__dict = None
 
     def dict(self):
         if self.__dict:
@@ -26,12 +27,8 @@ class Env:
         return self.__dict
 
     def __get_stream(self):
-        self._is_file = False
-        if isinstance(self.dotenv_path, io.StringIO):
-            return self.dotenv_path
-
         if os.path.exists(self.dotenv_path):
-            self._is_file = True
+            self.__is_file = True
             return io.open(self.dotenv_path)
 
         return io.StringIO('')
@@ -46,7 +43,7 @@ class Env:
 
             yield key, value
 
-        if self._is_file:
+        if self.__is_file:
             f.close()
 
     def set_as_environment_variables(self):
@@ -80,8 +77,7 @@ class Env:
 
     def __resolve_nested_variables(self, values):
         def __replacement(name):
-            ret = os.getenv(name, values.get(name, ""))
-            return ret
+            return os.getenv(name, values.get(name, ""))
 
         def __re_sub_callback(match_object):
             return __replacement(match_object.group()[2:-1])
