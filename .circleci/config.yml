@@ -8,5 +8,12 @@ jobs:
       - run: git submodule update --init
       - run: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run: docker build -t neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM -t neronmoon/bullet-master-server:latest .
+  test:
+    machine: true
+    steps:
+      - run: docker run neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM python -m pytest -v
+  publish:
+    machine: true
+    steps:
       - run: docker push neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM
       - run: docker push neronmoon/bullet-master-server:latest

@@ -1,2 +1,5 @@
 !.git
 !.gitmodules
+.pytest_cache
+*.pyc
+__pycache__

@@ -17,11 +17,12 @@ class Env:
 
     def __init__(self, dotenv_path):
         self.dotenv_path = dotenv_path
+        if not os.path.isfile(self.dotenv_path):
+            warnings.warn("File doesn't exist {}".format(self.dotenv_path))
 
     def dict(self):
         if self.__dict:
             return self.__dict
-
         values = OrderedDict(self.__parse())
         self.__dict = self.__resolve_nested_variables(values)
         return self.__dict
@@ -30,19 +31,15 @@ class Env:
         if os.path.exists(self.dotenv_path):
             self.__is_file = True
             return io.open(self.dotenv_path)
-
         return io.StringIO('')
 
     def __parse(self):
         f = self.__get_stream()
-
         for line in f:
-            key, value = self.__parse_line(line)
+            key, value = self.parse_line(line)
             if not key:
                 continue
-
             yield key, value
-
         if self.__is_file:
             f.close()
 
@@ -51,25 +48,19 @@ class Env:
             if k not in os.environ:
                 os.environ[k] = v
 
-    def __parse_line(self, line):
+    def parse_line(self, line):
         line = line.strip()
-
         if not line or line.startswith('#') or '=' not in line:
             return None, None
-
         k, v = line.split('=', 1)
-
         if k.startswith('export '):
             k = k.lstrip('export ')
-
         k, v = k.strip(), v.strip()
-
         if v:
             v = v.encode('unicode-escape').decode('ascii')
             quoted = v[0] == v[-1] in ['"', "'"]
             if quoted:
                 v = self.__decode_escaped(v[1:-1])
-
         return k, v
 
     def __decode_escaped(self, escaped):

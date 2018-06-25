@@ -14,3 +14,8 @@ docker run -it --rm --mount type=bind,source="$(pwd)"/cert,target=/srv/app/cert 
 ```
 docker kill bullet-master-server && docker rm bullet-master-server
 ```
+
+## Tests:
+```
+docker run -it --mount type=bind,source="$(pwd)"/,target=/srv/app/ neronmoon/bullet-master-server:master-27 python -m pytest -v --pdb
+```
