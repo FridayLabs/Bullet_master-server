@@ -4,3 +4,4 @@ __pycache__
 src/protocol
 cert/
 .pytest_cache
+.coverage

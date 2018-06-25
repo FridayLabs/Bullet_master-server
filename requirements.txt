@@ -2,3 +2,4 @@ protobuf
 axel
 inject
 pytest
+pytest-cov
