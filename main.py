@@ -3,7 +3,7 @@ import sys
 import signal
 from src.Server import Server
 
-server = Server()
+server = Server(os.getenv("LISTEN", "0.0.0.0"), int(os.getenv("PORT", 9999)))
 
 
 def exit():
@@ -14,6 +14,7 @@ def exit():
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, lambda x, y: exit())
     try:
-        server.start(os.getenv("LISTEN", "0.0.0.0"), int(os.getenv("PORT", 9999)))
+        server.initialize()
+        server.start()
     except KeyboardInterrupt:
         exit()

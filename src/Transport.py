@@ -33,6 +33,7 @@ class Transport:
                 else:
                     self.buffer += self.socket.recv(self.chunk_size)
             except:
+                self.logger.exception("Exception!", exc_info=True)
                 self.close()
 
     def __send(self, data):

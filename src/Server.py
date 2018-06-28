@@ -10,49 +10,63 @@ from src.Services.Configurator import Configurator
 
 
 class Server:
-    handlers = []
-    threads = []
-    alive = True
+    __host = '0.0.0.0'
+    __port = 9999
+    __socket = None
+    __handlers = []
+    __threads = []
+    __alive = True
     logger = inject.attr('Logger')
 
-    def __init__(self):
+    def __init__(self, host, port):
+        self.__host = host
+        self.__port = port
+
+    def initialize(self):
         configurator = Configurator()
         configurator.configure_everything()
+        self.__context = self.__build_socket_context()
+        self.__socket = self.__build_socket(self.__host, self.__port, self.__context)
 
-    def start(self, host, port):
-        context = self.__build_socket_context()
-        soc = self.__build_socket(host, port, context)
-        self.logger.info("Started server on " + host + ":" + str(port))
-        self.alive = True
+    def start(self):
+        self.listen()
         self.__start_sanity_threads()
-        while self.alive:
-            conn, addr = soc.accept()
-            try:
-                handler = self.__build_handler_thread(context, conn, addr)
-                self.handlers.append(handler)
-                handler.start()
-            except:
-                self.logger.exception("Exception in main thread!", exc_info=True)
-        soc.close()
+        while self.__alive:
+            self.__serve()
+
+    def listen(self):
+        self.__socket.listen(int(os.getenv("MAX_CLIENTS", 1000)))
+        self.logger.info("Started server on " + self.__host + ":" + str(self.__port))
+        self.__alive = True
+
+    def __serve(self):
+        conn, addr = self.__socket.accept()
+        try:
+            handler = self.__build_handler_thread(self.__context, conn, addr)
+            self.__handlers.append(handler)
+            handler.start()
+        except:
+            self.logger.exception("Exception in main thread!", exc_info=True)
 
     def shutdown(self):
         self.logger.info("Stopping server..")
-        self.alive = False
-        for handler in self.handlers:
+        self.__socket.close()
+        self.__alive = False
+        for handler in self.__handlers:
             handler.stop()
         self.logger.info("Bye!")
 
     def __cleanup(self):
         def cleanup_handlers(self):
-            for thread in self.handlers:
+            for thread in self.__handlers:
                 if not thread.isAlive():
-                    self.handlers.remove(thread)
-            self.logger.debug("Cleanup processed. Current threads count: %d" % len(self.handlers))
-        util.periodically(lambda: cleanup_handlers(self), lambda: self.alive, int(os.getenv("CLEANUP_TIMEOUT") or 5))
+                    self.__handlers.remove(thread)
+            self.logger.debug("Cleanup processed. Current threads count: %d" % len(self.__handlers))
+        util.periodically(lambda: cleanup_handlers(self), lambda: self.__alive, int(os.getenv("CLEANUP_TIMEOUT") or 5))
 
     def __start_sanity_threads(self):
         def start_thread(t):
-            self.threads.append(t)
+            self.__threads.append(t)
             t.start()
 
         start_thread(Thread(name="Cleanup", target=self.__cleanup))
@@ -69,7 +83,6 @@ class Server:
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         soc.bind((host, port))
-        soc.listen(int(os.getenv("MAX_CLIENTS", 1000)))
         return soc
 
     def __build_handler_thread(self, context, conn, addr):

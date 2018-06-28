@@ -17,5 +17,5 @@ docker kill bullet-master-server && docker rm bullet-master-server
 
 ## Tests:
 ```
-docker run -it --mount type=bind,source="$(pwd)"/,target=/srv/app/ neronmoon/bullet-master-server:master-27 python -m pytest -v --pdb
+docker run -it --mount type=bind,source="$(pwd)"/,target=/srv/app/ neronmoon/bullet-master-server:master-27 python -m pytest -v --cov-report term-missing --cov --cov-fail-under 80 --pdb
 ```
