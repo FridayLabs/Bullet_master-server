@@ -1,4 +1,6 @@
 #!/bin/bash
 
-make certificate-dev
+if [ ! -e cert/cert.pem ]; then
+    make certificate
+fi
 python -m pytest -v --cov-report term-missing --cov --cov-fail-under 80
