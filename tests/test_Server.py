@@ -23,7 +23,6 @@ def build_client():
     context.options |= ssl.OP_NO_TLSv1 | ssl.OP_NO_TLSv1_1
     conn = context.wrap_socket(sock, server_hostname='ip.krasnoperov.tk')
     conn.connect(('0.0.0.0', 10000))
-    time.sleep(1)
     return conn
 
 
@@ -31,10 +30,9 @@ def test_start_and_stop():
     t, s = build_server()
     t.start()
     try:
-        time.sleep(1)
         assert s.is_alive() == True
         s.shutdown()
-        time.sleep(1)
+        time.sleep(0.5)
         assert s.is_alive() == False
         assert t.is_alive() == False
     finally:
@@ -48,11 +46,11 @@ def test_client_can_connect():
     t.start()
     try:
         conn = build_client()
+        time.sleep(0.6)
         assert s.get_clients_count() == 1
-        time.sleep(1)
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        time.sleep(15)
+        time.sleep(1)
         assert s.get_clients_count() == 0
     finally:
         s.shutdown()

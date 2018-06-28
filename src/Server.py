@@ -39,8 +39,11 @@ class Server:
                 handler.start()
             except socket.timeout:
                 pass
+            except KeyboardInterrupt:
+                break
             except:
                 self.__logger.exception("Exception in main thread!", exc_info=True)
+        self.shutdown()
 
     def __listen(self):
         self.__socket.listen(int(os.getenv("MAX_CLIENTS", 1000)))
