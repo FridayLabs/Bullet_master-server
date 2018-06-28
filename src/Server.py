@@ -32,11 +32,13 @@ class Server:
         self.__listen()
         self.__start_sanity_threads()
         while self.__alive:
-            conn, addr = self.__socket.accept()
             try:
+                conn, addr = self.__socket.accept()
                 handler = self.__build_handler_thread(self.__context, conn, addr)
                 self.__handlers.append(handler)
                 handler.start()
+            except socket.timeout:
+                pass
             except:
                 self.__logger.exception("Exception in main thread!", exc_info=True)
 
@@ -86,6 +88,7 @@ class Server:
         soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         soc.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         soc.bind((host, port))
+        soc.settimeout(0.2)
         return soc
 
     def __build_handler_thread(self, context, conn, addr):

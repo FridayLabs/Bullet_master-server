@@ -12,7 +12,7 @@ def build_server():
     server.initialize()
 
     thread = Thread(target=server.start)
-    thread.setDaemon(True)
+    thread.daemon = True
     return (thread, server,)
 
 
@@ -52,7 +52,7 @@ def test_client_can_connect():
         time.sleep(1)
         conn.shutdown(socket.SHUT_RDWR)
         conn.close()
-        time.sleep(10)
+        time.sleep(15)
         assert s.get_clients_count() == 0
     finally:
         s.shutdown()
