@@ -20,7 +20,7 @@ def test_pings_client():
     assert "Bullet.PingClient" in str(s.income_log)
 
 
-def test_stops_on_disconnect():
+def test_stops_on_disconnect(caplog):
     s = Mocket()
     h = Handler(s)
     h.start()

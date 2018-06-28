@@ -6,16 +6,15 @@ class Mocket:
     is_shutdown = False
 
     def sendall(self, bytes):
-        if(self.throw_error):
-            raise Exception('Error on sending to socket!')
+        if self.throw_error or self.is_closed:
+            raise Exception('Error on receive from socket!')
         self.income_log += bytes
         self.buffer += bytes
 
     def recv(self, len):
-        if(self.throw_error):
+        if self.throw_error or self.is_closed:
             raise Exception('Error on receive from socket!')
         packet = self.buffer[:len]
-
         self.buffer = self.buffer[len:]
         return packet
 

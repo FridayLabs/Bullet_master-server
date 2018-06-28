@@ -16,7 +16,7 @@ class Server:
     __handlers = []
     __threads = []
     __alive = True
-    logger = inject.attr('Logger')
+    __logger = inject.attr('Logger')
 
     def __init__(self, host, port):
         self.__host = host
@@ -29,39 +29,42 @@ class Server:
         self.__socket = self.__build_socket(self.__host, self.__port, self.__context)
 
     def start(self):
-        self.listen()
+        self.__listen()
         self.__start_sanity_threads()
         while self.__alive:
-            self.__serve()
+            conn, addr = self.__socket.accept()
+            try:
+                handler = self.__build_handler_thread(self.__context, conn, addr)
+                self.__handlers.append(handler)
+                handler.start()
+            except:
+                self.__logger.exception("Exception in main thread!", exc_info=True)
 
-    def listen(self):
+    def __listen(self):
         self.__socket.listen(int(os.getenv("MAX_CLIENTS", 1000)))
-        self.logger.info("Started server on " + self.__host + ":" + str(self.__port))
+        self.__logger.info("Started server on " + self.__host + ":" + str(self.__port))
         self.__alive = True
 
-    def __serve(self):
-        conn, addr = self.__socket.accept()
-        try:
-            handler = self.__build_handler_thread(self.__context, conn, addr)
-            self.__handlers.append(handler)
-            handler.start()
-        except:
-            self.logger.exception("Exception in main thread!", exc_info=True)
-
     def shutdown(self):
-        self.logger.info("Stopping server..")
-        self.__socket.close()
+        self.__logger.info("Stopping server..")
         self.__alive = False
+        self.__socket.close()
         for handler in self.__handlers:
             handler.stop()
-        self.logger.info("Bye!")
+        self.__logger.info("Bye!")
+
+    def is_alive(self):
+        return self.__alive
+
+    def get_clients_count(self):
+        return len(self.__handlers)
 
     def __cleanup(self):
         def cleanup_handlers(self):
             for thread in self.__handlers:
                 if not thread.isAlive():
                     self.__handlers.remove(thread)
-            self.logger.debug("Cleanup processed. Current threads count: %d" % len(self.__handlers))
+            self.__logger.debug("Cleanup processed. Current threads count: %d" % len(self.__handlers))
         util.periodically(lambda: cleanup_handlers(self), lambda: self.__alive, int(os.getenv("CLEANUP_TIMEOUT") or 5))
 
     def __start_sanity_threads(self):

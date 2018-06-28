@@ -22,6 +22,8 @@ class Transport:
         return self.__send(any.SerializeToString())
 
     def recv_packet(self):
+        if self.closed:
+            raise SocketDisconnect()
         while not self.closed:
             try:
                 if self.null_enumerator in self.buffer:
@@ -31,9 +33,11 @@ class Transport:
                     self.logger.debug("Received packet: " + str(packet))
                     return self.__parse_packet(packet)
                 else:
-                    self.buffer += self.socket.recv(self.chunk_size)
+                    recv = self.socket.recv(self.chunk_size)
+                    if recv == "":
+                        self.close()
+                    self.buffer += recv
             except:
-                self.logger.exception("Exception!", exc_info=True)
                 self.close()
 
     def __send(self, data):
