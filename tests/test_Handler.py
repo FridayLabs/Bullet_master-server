@@ -27,7 +27,11 @@ def test_stops_on_disconnect():
     time.sleep(0.5)
     s.close()
     time.sleep(check_timeout)
-    assert h.alive == False
+    try:
+        assert h.alive == False
+    finally:
+        h.stop()
+        h.join()
 
 
 def test_stops_on_error():
@@ -38,3 +42,8 @@ def test_stops_on_error():
     s.set_throw_error(True)
     time.sleep(check_timeout)
     assert h.alive == False
+    try:
+        assert h.alive == False
+    finally:
+        h.stop()
+        h.join()
