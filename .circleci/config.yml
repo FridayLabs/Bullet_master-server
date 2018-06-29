@@ -28,8 +28,7 @@ jobs:
             docker push neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM
             docker push neronmoon/bullet-master-server:latest
   deploy:
-    machine:
-      enabled: true
+    machine: true
     steps:
       - run:
           name: Deploy
