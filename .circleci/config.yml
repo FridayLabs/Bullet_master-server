@@ -1,10 +1,9 @@
 version: 2
 jobs:
   build:
-    machine:
-      enabled: true
-      environment:
+    environment:
         TAG: $$(git log -1 --pretty=%!H(MISSING))
+    machine: true
     steps:
       - checkout
       - run:
