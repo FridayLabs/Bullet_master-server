@@ -31,7 +31,7 @@ jobs:
     machine: true
     steps:
       - run:
-          name: Deploy
+          name: Deploy to beta
           command: |
             ssh $BULLET_BETA_MASTER_NODE_USER@$BULLET_BETA_MASTER_NODE_HOST "python3 infrastructure/deploy_master_server.py $CIRCLE_BRANCH-$CIRCLE_PREVIOUS_BUILD_NUM"
 
