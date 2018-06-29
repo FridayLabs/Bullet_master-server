@@ -14,18 +14,18 @@ jobs:
           command: docker login -u $DOCKER_USER -p $DOCKER_PASS
       - run:
           name: Build image
-          command: docker build -t neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM -t neronmoon/bullet-master-server:latest .
+          command: docker build -t neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM -t neronmoon/bullet-master-server:latest .
       - run:
           name: Run tests
           command: |
             mkdir test-reports
-            docker run --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
+            docker run --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
       - store_test_results:
           path: test-reports
       - run:
           name: Push images to DockerHub
           command: |
-            docker push neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM
+            docker push neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM
             docker push neronmoon/bullet-master-server:latest
   deploy:
     machine: true
@@ -37,7 +37,7 @@ jobs:
 
 workflows:
   version: 2
-  build-and-deploy:
+  beta-build-and-deploy:
     jobs:
       - build
       - deploy:
