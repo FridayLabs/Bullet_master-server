@@ -14,6 +14,4 @@ class Client:
         if message.UserID == 'admin' and message.UserPassword == 'admin':
             self.authenticated = True
             self.user_id = message.UserID
-            # TODO send user data
-        else:
-            self.transport.send_packet(Unauthenticated())
+        self.transport.send_packet(Unauthenticated())
