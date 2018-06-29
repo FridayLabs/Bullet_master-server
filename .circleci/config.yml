@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Deploy
           command: |
-            ssh $BULLET_BETA_MASTER_NODE_USER@$BULLET_BETA_MASTER_NODE_HOST "python3 infrastructure/deploy_master_server.py master-$CIRCLE_BUILD_NUM" # Deploy command will be here
+            ssh $BULLET_BETA_MASTER_NODE_USER@$BULLET_BETA_MASTER_NODE_HOST "python3 infrastructure/deploy_master_server.py master-$CIRCLE_BUILD_NUM"
 
 workflows:
   version: 2
