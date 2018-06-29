@@ -1,11 +1,10 @@
 version: 2
 jobs:
   build:
-    environment:
-        TAG: $$(git log -1 --pretty=%!H(MISSING))
     machine: true
     steps:
       - checkout
+      - run: export TAG="$$(git log -1 --pretty=%!H(MISSING))"
       - run:
           name: Init protocol
           command: |
