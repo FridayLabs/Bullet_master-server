@@ -30,9 +30,10 @@ def test_start_and_stop():
     t, s = build_server()
     t.start()
     try:
+        time.sleep(0.5)
         assert s.is_alive() == True
         s.shutdown()
-        time.sleep(1)
+        time.sleep(0.5)
         assert s.is_alive() == False
         assert t.is_alive() == False
     finally:
