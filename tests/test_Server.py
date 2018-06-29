@@ -32,7 +32,7 @@ def test_start_and_stop():
     try:
         assert s.is_alive() == True
         s.shutdown()
-        time.sleep(0.5)
+        time.sleep(1)
         assert s.is_alive() == False
         assert t.is_alive() == False
     finally:
