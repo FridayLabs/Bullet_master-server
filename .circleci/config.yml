@@ -19,7 +19,7 @@ jobs:
           name: Run tests
           command: |
             mkdir test-reports
-            docker run --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports  neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
+            docker run --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
       - store_test_results:
           path: test-reports
       - run:
@@ -27,3 +27,23 @@ jobs:
           command: |
             docker push neronmoon/bullet-master-server:master-$CIRCLE_BUILD_NUM
             docker push neronmoon/bullet-master-server:latest
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - run:
+          name: Deploy
+          command: |
+            ssh $BULLET_BETA_MASTER_NODE_USER@$BULLET_BETA_MASTER_NODE_HOST "echo 111" # Deploy command will be here
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
