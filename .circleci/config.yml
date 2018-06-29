@@ -2,8 +2,6 @@ version: 2
 jobs:
   build:
     machine: true
-    environment:
-      SHORT_GIT_HASH: $(echo $CIRCLE_SHA1 | cut -c -7)
     steps:
       - checkout
       - run:
