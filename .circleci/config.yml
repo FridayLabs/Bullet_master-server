@@ -18,8 +18,9 @@ jobs:
       - run:
           name: Run tests
           command: |
+            docker run --name mysql -d -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql/mysql:5.7
             mkdir test-reports
-            docker run --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
+            docker run --mount type=bind,source="$(pwd)"/,target=/srv/app/ neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
       - store_test_results:
           path: test-reports
       - run:
