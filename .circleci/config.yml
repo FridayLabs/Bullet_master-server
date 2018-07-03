@@ -19,7 +19,7 @@ jobs:
           name: Run tests
           command: |
             docker network create test
-            docker run --net test --name database -d -e MYSQL_ROOT_PASSWORD=root mysql/mysql-server:5.7
+            docker run --net test --name database -d -e MYSQL_ROOT_PASSWORD=root -e MYSQL_ROOT_HOST=% mysql/mysql-server:5.7
             sleep 10
             docker exec database mysql -uroot -proot -Ase "create database bullet_master_server_testing"
             mkdir test-reports
