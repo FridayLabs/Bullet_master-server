@@ -21,7 +21,7 @@ jobs:
             docker network create test
             docker run --net test --name database -d -e MYSQL_ROOT_PASSWORD=root mysql/mysql-server:5.7
             sleep 10
-            docker exec mysql mysql -uroot -proot -Ase "create database bullet_master_server_testing"
+            docker exec database mysql -uroot -proot -Ase "create database bullet_master_server_testing"
             mkdir test-reports
             docker run --net test --mount type=bind,source="$(pwd)"/test-reports,target=/srv/app/test-reports neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
       - store_test_results:
