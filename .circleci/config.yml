@@ -19,6 +19,7 @@ jobs:
           name: Run tests
           command: |
             docker run --name mysql -d -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 mysql/mysql-server:5.7
+            sleep 5
             docker exec mysql mysql -uroot -proot -Ase "create database bullet_master_server_testing"
             mkdir test-reports
             docker run --mount type=bind,source="$(pwd)"/,target=/srv/app/ neronmoon/bullet-master-server:$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM /bin/bash runtests.sh
