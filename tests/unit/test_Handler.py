@@ -1,19 +1,20 @@
 import os
 import time
 import pdb
-from tests.Mocket import Mocket
+from tests.unit.Mocket import Mocket
 from src.Handler import Handler
 import logging
 
 
 def test_pings_client():
+    os.environ['CLIENT_CHECK_TIMEOUT'] = '0'
     s = Mocket()
     h = Handler(s)
     h.start()
-    time.sleep(0.6)
+    time.sleep(1)
     h.stop()
     h.join()
-    assert "Bullet.PingClient" in str(s.income_log)
+    assert "Bullet.Server.Ping" in str(s.income_log)
 
 
 def test_stops_on_disconnect(caplog):

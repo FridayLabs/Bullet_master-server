@@ -1,7 +1,9 @@
 protobuf
 axel
 inject
-
+pymysql
+peewee
+peewee_migrate
 
 # testing
 pytest

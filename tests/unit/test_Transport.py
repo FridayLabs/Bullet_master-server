@@ -4,7 +4,7 @@ import pytest
 from src.Transport import Transport
 from src.Exceptions import SocketDisconnect
 from google.protobuf.any_pb2 import Any
-from tests.Mocket import Mocket
+from tests.unit.Mocket import Mocket
 
 
 def build_packet():

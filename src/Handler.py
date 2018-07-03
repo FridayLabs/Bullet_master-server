@@ -8,7 +8,7 @@ import src.Util as util
 from src.Client import Client
 from src.Transport import Transport
 from src.Exceptions import SocketDisconnect
-from protocol.PingClient_pb2 import PingClient
+from protocol.Server.Ping_pb2 import Ping
 
 
 class Handler(threading.Thread):
@@ -50,9 +50,7 @@ class Handler(threading.Thread):
         def ping(self):
             try:
                 self.logger.debug("Ping client")
-                ping = PingClient()
-                ping.ServerTime = int(time.time())
-                self.transport.send_packet(ping)
+                self.transport.send_packet(Ping(Time=int(time.time())))
             except SocketDisconnect:
                 self.stop()
         util.periodically(lambda: ping(self), lambda: self.alive, int(os.getenv("CLIENT_CHECK_TIMEOUT", 5)))

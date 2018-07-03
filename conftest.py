@@ -1,9 +1,9 @@
 import os
 from src.Services.Configurator import Configurator
 
+os.environ['TESTING'] = 'True'
+
 
 def pytest_runtest_setup():
-    configurator = Configurator()
-    configurator.configure_environment()
-    os.environ['CLIENT_CHECK_TIMEOUT'] = '0'
-    os.environ['CLEANUP_TIMEOUT'] = '0'
+    configurator = Configurator('.env.test')
+    configurator.configure_everything()

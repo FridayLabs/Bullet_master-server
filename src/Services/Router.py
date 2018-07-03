@@ -1,5 +1,7 @@
 import inject
-from protocol.Authenticate_pb2 import Authenticate
+from protocol.Client.Authenticate_pb2 import Authenticate
+from protocol.Client.Pong_pb2 import Pong
+from protocol.Hello_pb2 import Hello
 
 
 class Router:
@@ -7,6 +9,8 @@ class Router:
 
     routes = {
         Authenticate: lambda client, message: client.authenticate(message),
+        Pong: lambda client, message: client.set_latency(abs(message.ServerTime - message.ClientTime)),
+        Hello: lambda client, message: client.check_version(message.Version)
     }
 
     def route(self, client, message):

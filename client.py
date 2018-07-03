@@ -4,7 +4,7 @@ import socket
 import ssl
 import traceback
 from src.Util import import_procotol_class
-from protocol.Authenticate_pb2 import Authenticate
+from protocol.Client.Authenticate_pb2 import Authenticate
 from google.protobuf.any_pb2 import Any
 
 container = {
@@ -68,12 +68,11 @@ def send(args):
 def authenticate(args):
     auth = Authenticate()
     if len(args) == 0:
-        auth.UserID = 'admin'
+        auth.UserId = 'admin'
         auth.UserPassword = 'admin'
     else:
-        auth.UserID = args[0]
+        auth.UserId = args[0]
         auth.UserPassword = args[1]
-    auth.ClientVersion = 'v0.0.1-alpha'
     any = Any()
     Any.Pack(any, auth)
     packet = any.SerializeToString()

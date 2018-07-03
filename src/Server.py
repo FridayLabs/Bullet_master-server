@@ -23,8 +23,6 @@ class Server:
         self.__port = port
 
     def initialize(self):
-        configurator = Configurator()
-        configurator.configure_everything()
         self.__context = self.__build_socket_context()
         self.__socket = self.__build_socket(self.__host, self.__port, self.__context)
 
