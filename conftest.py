@@ -5,6 +5,9 @@ os.environ['TESTING'] = 'True'
 
 
 def pytest_runtest_setup():
-    os.remove('logs/test.log')
+    try:
+        os.remove('logs/test.log')
+    except OSError:
+        pass
     configurator = Configurator('.env.test')
     configurator.configure_everything()
