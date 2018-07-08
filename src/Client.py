@@ -1,5 +1,4 @@
 import inject
-from peewee import DoesNotExist
 from protocol.Failure_pb2 import Failure
 from protocol.Success_pb2 import Success
 from protocol.Hello_pb2 import Hello
@@ -8,35 +7,32 @@ from src.Models.User import User
 
 class Client:
     authenticated = False
-    user_id = None
-    latency = 0
-    user = None
-    logger = inject.attr('Logger')
+    events = inject.attr('EventDispatcher')
+    __user = None
 
     def __init__(self, transport):
         self.transport = transport
+        self.events.add_listener('ClientAuthenticated', self.__set_user)
 
-    def authenticate(self, message):
-        try:
-            user = User.select().where(
-                User.user_identifier == message.UserId,
-                User.password == User.get_password_hash(message.UserPassword)
-            ).get()
-            self.user = user
-            self.transport.send_packet(Success())
-        except DoesNotExist:
-            self.transport.send_packet(Failure())
+    def __set_user(self, args):
+        self.__user = args['user']
 
-    def set_latency(self, latency):
-        if self.user is not None:
-            self.user.latency = latency
-            self.user.save()
-        else:
-            self.transport.send_packet(Failure(Message="Unauthenticated"))
+    def get_user(self):
+        return self.__user
 
-    def check_version(self, version):
-        if inject.instance('Version') == version:
-            self.transport.send_packet(Hello())
-        else:
-            self.transport.send_packet(Failure(Message="Client version is not compatible"))
-            self.transport.close()
+    # def invite_to_party(self, user_id):
+    #     target_in_party = self.party_manager.is_user_in_party(user_id)
+    #     if target_in_party:
+    #         return self.transport.send_packet(Failure(Message='User already in party'))
+
+    #     self_in_party = self.party_manager.is_user_in_party(self.user.user_identifier)
+    #     if self_in_party and not self.party_manager.is_party_leader(self.user.user_identifier):
+    #         return self.transport.send_packet(Failure(Message='Current user is not party leader'))
+
+    #     if not self_in_party and not target_in_party:
+    #         party_id = self.party_manager.make_party(self.user.user_identifier, user_id)
+    #         self.party_manager.set_party_leadership(party_id, self.user.user_identifier)
+    #         return
+
+    #     if self.is_in_party and self.is_party_lea:
+    #         self.transport.send_packet(Failure(Message="Client version is not compatible"))

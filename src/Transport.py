@@ -1,5 +1,6 @@
 import socket
 import inject
+import threading
 import src.Util as util
 from src.Exceptions import SocketDisconnect
 from google.protobuf.any_pb2 import Any
@@ -15,10 +16,13 @@ class Transport:
     def __init__(self, socket):
         self.socket = socket
         self.logger.debug("Connected!")
+        self.__thread = threading.Thread(target=self.__send_noop)
+        self.__thread.start()
 
     def send_packet(self, packet):
         any = Any()
         Any.Pack(any, packet)
+        self.logger.debug('Sending packet ' + str(any))
         return self.__send(any.SerializeToString())
 
     def recv_packet(self):
@@ -27,7 +31,7 @@ class Transport:
         while not self.closed:
             try:
                 if self.null_enumerator in self.buffer:
-                    packets = self.buffer.split(self.null_enumerator)
+                    packets = [p for p in self.buffer.split(self.null_enumerator) if p != b'']
                     self.buffer = self.null_enumerator.join(packets[1:])
                     packet = packets[0]
                     self.logger.debug("Received packet: " + str(packet))
@@ -46,6 +50,9 @@ class Transport:
         except:
             self.close()
 
+    def __send_noop(self):
+        util.periodically(lambda: self.__send(b''), lambda: not self.closed, 0.1)
+
     def __parse_packet(self, packet):
         any = Any()
         any.ParseFromString(packet)
@@ -59,6 +66,8 @@ class Transport:
             return
         self.closed = True
         try:
+            self.__thread.join()
+            self.__thread = None
             self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
         finally:

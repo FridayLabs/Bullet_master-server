@@ -1,44 +1,41 @@
 import inject
-from tests.functional.helpers import *
+import time
+from tests.functional.FakeClient import FakeClient
+from tests.functional.helpers import packet_is_a, register_user
 from src.Models.User import User
 from protocol.Hello_pb2 import Hello
 from protocol.Failure_pb2 import Failure
 from protocol.Success_pb2 import Success
 
 
-def test_checks_version(migrations):
-    register_user('foo', 'foo')
-    os.environ['CLIENT_CHECK_TIMEOUT'] = '10'
-    try:
-        server, client, t = build_server_and_client()
+def test_checks_version(migrations, server, client):
+    client.send_packet(Hello(Version='v0.0.1-client'))
+    assert packet_is_a(Failure, client.receive_packet())
+    time.sleep(1)
+    assert server.get_clients_count() == 0
 
-        send_packet(client, Hello(Version='v0.0.1-client'))
-        assert packet_is_a(Failure, receive_packet(client))
-        time.sleep(0.5)
-        assert server.get_clients_count() == 0
-
-        client = build_client()
-        send_packet(client, Hello(Version=inject.instance('Version')))
-        time.sleep(0.1)
-        p = receive_packet(client)
-        assert packet_is_a(Hello, p)
-
-    finally:
-        server.shutdown()
-        t.join()
+    client = FakeClient()
+    client.send_packet(Hello(Version=inject.instance('Version')))
+    time.sleep(0.1)
+    assert packet_is_a(Hello, client.receive_packet())
+    client.close()
 
 
-def test_closes_socket_after_fail(migrations):
-    os.environ['CLIENT_CHECK_TIMEOUT'] = '10'
-    try:
-        server, client, t = build_server_and_client()
-        send_packet(client, Hello(Version='v0.0.1-client'))
-        assert packet_is_a(Failure, receive_packet(client))
+# def test_auth_with_user(migrations, server, client):
+    # register_user('foo', 'foo')
+    # client.auth_with('foo', 'bar')
 
-        send_packet(client, Hello(Version='v0.0.1-client'))
-        time.sleep(0.5)
-        assert server.get_clients_count() == 0
 
-    finally:
-        server.shutdown()
-        t.join()
+def test_closes_socket_after_fail(migrations, server, client):
+    client.send_packet(Hello(Version='v0.0.1-client'))
+    assert packet_is_a(Failure, client.receive_packet())
+
+    client.send_packet(Hello(Version='v0.0.1-client'))
+    time.sleep(1)
+    assert server.get_clients_count() == 0
+
+    client = FakeClient()
+    client.send_packet(Hello(Version=inject.instance('Version')))
+    time.sleep(0.1)
+    assert packet_is_a(Hello, client.receive_packet())
+    client.close()

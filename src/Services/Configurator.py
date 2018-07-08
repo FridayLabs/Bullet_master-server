@@ -3,14 +3,16 @@ import inject
 import logging
 import threading
 from peewee import *
-from src.Services.Migrator import Migrator
 from src.Services.Env import Env
-from src.Services.Router import Router
+from src.Services.Migrator import Migrator
+from src.Services.LocalContext import LocalContext
+from src.Services.ClientPinger import ClientPinger
+from src.Services.PartyManager import PartyManager
+from src.Services.EventDispatcher import EventDispatcher
 
 
 class Configurator:
     env_file = '.env'
-    __environment_configured = False
 
     def __init__(self, env_file='.env'):
         self.env_file = env_file
@@ -26,6 +28,10 @@ class Configurator:
         formatter = logging.Formatter("%(asctime)s [%(threadName)s] %(levelname)s: %(message)s")
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+        if self.__is_debug_env():
+            file_handler = logging.FileHandler(filename='logs/' + self.__env() + '.log')
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
         logger.setLevel(logging.DEBUG if self.__is_debug_env() else logging.INFO)
 
     def load_environment(self):
@@ -37,9 +43,13 @@ class Configurator:
         def configurator(binder):
             binder.bind('APP_ROOT', os.getcwd())
             binder.bind('Version', os.getenv('VERSION'))
-            binder.bind('Logger', logging.getLogger())
-            binder.bind('Router', Router())
-            binder.bind_to_provider('Client', lambda: getattr(threading.local(), 'client', None))
+            ctxt = LocalContext()
+            binder.bind('Context', ctxt)
+            binder.bind_to_constructor('Logger', lambda: logging.getLogger())
+            binder.bind_to_constructor('EventDispatcher', lambda: EventDispatcher())
+            binder.bind_to_constructor('PartyManager', lambda: PartyManager())
+            binder.bind_to_provider('Transport', lambda: ctxt.get('Transport'))
+            binder.bind_to_provider('Client', lambda: ctxt.get('Client'))
             db = MySQLDatabase(
                 os.getenv('DB_DATABASE'),
                 host=os.getenv('DB_HOSTNAME'),
@@ -48,15 +58,14 @@ class Configurator:
                 port=os.getenv('DB_PORT', 3306))
             binder.bind('DB', db)
             binder.bind('Migrator', Migrator(db, os.getcwd() + '/migrations'))
-
-        if not Configurator.__environment_configured:
-            inject.configure(configurator)
-            Configurator.__environment_configured = True
+        inject.clear_and_configure(configurator)
 
     def migrate_db(self):
         migrator = inject.instance('Migrator')
         migrator.migrate()
 
+    def __env(self):
+        return os.getenv("ENVIRONMENT", "production")
+
     def __is_debug_env(self):
-        env = os.getenv("ENVIRONMENT", "production")
-        return env == "debug" or env == 'test'
+        return self.__env() in ["debug", 'test']

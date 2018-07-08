@@ -22,3 +22,7 @@ def import_procotol_class(name):
     else:
         module = importlib.import_module("google." + ".".join(components).lower() + "_pb2")
     return getattr(module, components[-1])
+
+
+def packet_is_a(cls, message):
+    return message.DESCRIPTOR.name == cls.DESCRIPTOR.name
