@@ -1,5 +1,6 @@
 import os
 import inject
+import time
 import pytest
 from src.Services.Configurator import Configurator
 from tests.functional.helpers import build_server
@@ -19,6 +20,7 @@ def server():
     t, server = build_server()
     try:
         t.start()
+        time.sleep(1)
         yield server
     finally:
         server.shutdown()
